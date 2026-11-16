@@ -2,27 +2,28 @@ package ado
 
 import (
 	"database/sql"
+
 	"github.com/deleteelf/goframework/entities"
 	"github.com/deleteelf/goframework/utils/loghelper"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-type DbType int
+type DbType string
 
 const (
-	Postgres DbType = iota
-	Oracle
-	MySql
+	Postgres DbType = "postgres"
+	Oracle   DbType = "oracle"
+	MySql    DbType = "mysql"
 )
 
 type DbConfig struct {
 	ConnectionString string
-	DbType           DbType
+	DbType           DbType `json:",default=postgres"`
 	//gorm.Config      //扩展gorm的配置
 	SkipDefaultTransaction bool
 	SafeColumn             bool
-	LogLevel               logger.LogLevel
+	LogLevel               logger.LogLevel `json:",default=2"` //数据库专属日志，默认只打印错误
 }
 type DbInterface interface {
 	//打开数据库连接
