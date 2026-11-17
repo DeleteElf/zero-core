@@ -4,6 +4,9 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"strings"
+	"time"
+
 	"github.com/deleteelf/goframework/entities"
 	"github.com/deleteelf/goframework/utils/loghelper"
 	"github.com/deleteelf/goframework/utils/stringhelper"
@@ -11,8 +14,6 @@ import (
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 	"gorm.io/gorm/schema"
-	"strings"
-	"time"
 )
 
 type PostgresDB struct {
@@ -20,7 +21,7 @@ type PostgresDB struct {
 }
 
 // 默认会自动打开和关闭连接，如果启用了事务，则在提交或回滚事务之前，不会关闭连接
-func NewPostgresDB(config DbConfig) *PostgresDB {
+func NewPostgresDB(config *DbConfig) *PostgresDB {
 	return &PostgresDB{
 		DbBase{
 			Config: config,

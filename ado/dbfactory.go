@@ -2,9 +2,9 @@ package ado
 
 import (
 	"database/sql"
+	"fmt"
 
 	"github.com/deleteelf/goframework/entities"
-	"github.com/deleteelf/goframework/utils/loghelper"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
@@ -71,7 +71,7 @@ type DataTable struct {
 }
 type DbBase struct {
 	//DbInterface
-	Config          DbConfig
+	Config          *DbConfig
 	db              *gorm.DB
 	ctx             *gorm.DB
 	isInTransaction bool
@@ -163,22 +163,20 @@ type DbBase struct {
 //}
 
 // 参考： https://gorm.io/docs/gorm_config.html
-func CreateDb(connectionString string, dbType DbType, logLevel logger.LogLevel) DbInterface {
-	config := DbConfig{ConnectionString: connectionString, DbType: dbType}
+func CreateDb(connectionString string, dbType DbType, logLevel logger.LogLevel) (DbInterface, error) {
+	config := new(DbConfig{ConnectionString: connectionString, DbType: dbType})
 	config.LogLevel = logLevel
 	return CreateDbByConfig(config)
 }
 
-func CreateDbByConfig(config DbConfig) DbInterface {
+func CreateDbByConfig(config *DbConfig) (DbInterface, error) {
 	config.SkipDefaultTransaction = true
 	switch config.DbType {
 	case Postgres:
 		pg := NewPostgresDB(config)
-		return pg
-		break
+		return pg, nil
 	default:
 		break
 	}
-	loghelper.GetDefaultLogger().Error("暂不支持的数据库类型！！")
-	return nil
+	return nil, fmt.Errorf("暂不支持的数据库类型：%s", config.DbType)
 }
