@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/deleteelf/goframework/entities"
+	"github.com/deleteelf/zero-core/entities"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )

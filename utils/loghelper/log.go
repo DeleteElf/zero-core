@@ -1,51 +1,19 @@
 package loghelper
 
 import (
-	"github.com/pion/logging"
-	"log"
-	"os"
 	"runtime"
-	"sync"
-	"time"
+	"syscall"
+	"unsafe"
+
+	"github.com/zeromicro/go-zero/core/logx"
 )
 
-type LogLevel int
-
-const (
-	Fatal LogLevel = iota + 1
-	Panic
-	Error
-	Warn
-	Info
-	Debug
-	Trace
-)
-
-func (level LogLevel) String() string {
-	return [...]string{"Fatal", "Panic", "Error", "Warn", "Info", "Debug", "Trace"}[level-1]
-}
-
-func GetLogLevel(level string) LogLevel {
-	levelMap := map[string]LogLevel{
-		"Fatal": Fatal,
-		"Panic": Panic,
-		"Error": Error,
-		"Warn":  Warn,
-		"Info":  Info,
-		"Debug": Debug,
-		"Trace": Trace,
-	}
-	return levelMap[level]
-}
-
-func GetColorLevel(level string) string {
-	levelMap := map[string]string{
-		"Fatal": "\x1b[97;31m", // 红色
-		"Panic": "\x1b[97;31m", // 红色
-		"Error": "\x1b[97;31m", // 红色
-		"Warn":  "\x1b[97;33m", // 黄色
-		"Info":  "\x1b[97;0m",  // 白色
-		"Debug": "\x1b[97;32m", //绿色
+func GetColorLevel(level uint32) string {
+	levelMap := map[uint32]string{
+		logx.DebugLevel:  "\x1b[97;32m", //绿色
+		logx.InfoLevel:   "\x1b[97;0m",  // 白色
+		logx.ErrorLevel:  "\x1b[97;33m", // 黄色
+		logx.SevereLevel: "\x1b[97;31m", // 红色
 	}
 	//背景色。。。。
 	//levelMap := map[string]string{
@@ -59,185 +27,67 @@ func GetColorLevel(level string) string {
 	return levelMap[level]
 }
 
-type LogManager struct {
-	logging.LoggerFactory
-	FactoryMap map[string]*LeveledLoggerImpl
-	Level      LogLevel
-	levels     map[LogLevel]string
-	mutex      sync.RWMutex
+//	func Printf(level uint32, messageFormat string, args ...any) {
+//		if logger.Level >= level {
+//			logger.SetPrefix(GetColorLevel(level) + logManager.levels[level] + "[" + logger.scope + "][" + time.Now().Format("2006-01-02 15:04:05.000") + "]")
+//			format := messageFormat + "\x1b[0m"
+//			switch level {
+//			case logx.DebugLevel:
+//				logx.Debug(msg)
+//			case logx.InfoLevel:
+//				logx.Info(msg)
+//			case logx.ErrorLevel:
+//				logx.Error(msg)
+//			case logx.SevereLevel:
+//				logx.Servere(msg)
+//			default:
+//			}
+//		}
+//	}
+func enableWindowsANSI() {
+	kernel32 := syscall.NewLazyDLL("kernel32.dll")
+	setConsoleMode := kernel32.NewProc("SetConsoleMode")
+	handle := syscall.Stdout
+	var mode uint32
+	getConsoleMode := kernel32.NewProc("GetConsoleMode")
+	getConsoleMode.Call(uintptr(handle), uintptr(unsafe.Pointer(&mode)))
+	// ENABLE_VIRTUAL_TERMINAL_PROCESSING = 0x0004
+	setConsoleMode.Call(uintptr(handle), uintptr(mode|0x0004))
 }
-
-type LeveledLoggerImpl struct {
-	logging.LeveledLogger
-	Level LogLevel
-	scope string
-	log.Logger
-}
-
-func NewLeveledLogger(scope string, level LogLevel) *LeveledLoggerImpl {
-	logger := &LeveledLoggerImpl{scope: scope, Level: level}
-	logger.SetFlags(0)
-	//log.SetFlags(log.Ldate | log.Lmicroseconds)
-	logger.SetOutput(os.Stdout)
-	//logger.SetPrefix(logManager.levels[level] + "[" + logger.scope + "][" + time.Now().Format("2006-01-02 15:04:05") + "]")
-	return logger
-}
-
-func NewLogManager(lvl LogLevel) *LogManager {
-	return &LogManager{
-		Level:      lvl,
-		FactoryMap: map[string]*LeveledLoggerImpl{"default": NewLeveledLogger("default", lvl)},
-		levels: map[LogLevel]string{
-			Fatal: "[Fatal]",
-			Panic: "[Panic]",
-			Error: "[Error]",
-			Warn:  "[Warn]",
-			Info:  "[Info]",
-			Debug: "[Debug]",
-		},
+func SetColorLogLevel(level uint32, msg string) string {
+	if runtime.GOOS == "windows" {
+		// Windows 10+ 可通过启用 VT 支持 ANSI
+		enableWindowsANSI()
 	}
+	return GetColorLevel(level) + msg + "\x1b[0m"
 }
 
-var logManager *LogManager
-
-func GetLogManager() *LogManager {
-	if logManager == nil {
-		logManager = NewLogManager(Warn)
-	}
-	return logManager
+func Debug(message string) {
+	logx.Debug(SetColorLogLevel(logx.DebugLevel, message))
+}
+func Debugf(messageFormat string, args ...any) {
+	logx.Debugf(SetColorLogLevel(logx.DebugLevel, messageFormat), args...)
 }
 
-func (logM *LogManager) Init(lvl LogLevel) {
-	logM.Level = lvl
-	for _, factory := range logM.FactoryMap {
-		factory.Level = lvl
-	}
+func Info(message string) {
+	logx.Info(SetColorLogLevel(logx.InfoLevel, message))
 }
 
-func (logM *LogManager) NewLogger(scope string) logging.LeveledLogger {
-	logM.mutex.Lock()
-	defer logM.mutex.Unlock()
-	if logM.FactoryMap[scope] == nil {
-		logM.FactoryMap[scope] = NewLeveledLogger(scope, logM.Level)
-	}
-	return logM.FactoryMap[scope]
+func Infof(messageFormat string, args ...any) {
+	logx.Infof(SetColorLogLevel(logx.InfoLevel, messageFormat), args...)
 }
 
-func GetDefaultLogger() *LeveledLoggerImpl {
-	GetLogManager()
-	return logManager.FactoryMap["default"]
+func Error(message string) {
+	logx.Error(SetColorLogLevel(logx.ErrorLevel, message))
 }
 
-func GetLogger(scope string) *LeveledLoggerImpl {
-	return GetLogManager().NewLogger(scope).(*LeveledLoggerImpl)
+func Errorf(messageFormat string, args ...any) {
+	logx.Errorf(SetColorLogLevel(logx.ErrorLevel, messageFormat), args...)
 }
 
-func StackTrace(all bool) string {
-	buf := make([]byte, 10240)
-	for {
-		size := runtime.Stack(buf, all)
-		if size == len(buf) {
-			buf = make([]byte, len(buf)<<1)
-			continue
-		}
-		break
-	}
-	return string(buf)
+func Severe(message string) {
+	logx.Severe(SetColorLogLevel(logx.SevereLevel, message))
 }
-
-func (logger *LeveledLoggerImpl) SetLevel(level LogLevel) {
-	logger.Level = level
-}
-
-func (logger *LeveledLoggerImpl) Println(level LogLevel, message string) {
-	if logger.Level >= level {
-		logger.SetPrefix(GetColorLevel(level.String()) + logManager.levels[level] + "[" + logger.scope + "][" + time.Now().Format("2006-01-02 15:04:05.000") + "]")
-		msg := message + "\x1b[0m"
-		switch level {
-		case Fatal:
-			//logger.SetOutput(os.Stderr)
-			logger.Fatalln(msg)
-		case Panic:
-			//logger.SetOutput(os.Stderr)
-			logger.Panicln(msg)
-		default:
-			//logger.SetOutput(os.Stdout)
-			logger.Logger.Println(msg)
-			break
-		}
-	}
-}
-func (logger *LeveledLoggerImpl) Printf(level LogLevel, messageFormat string, args ...any) {
-	if logger.Level >= level {
-		logger.SetPrefix(GetColorLevel(level.String()) + logManager.levels[level] + "[" + logger.scope + "][" + time.Now().Format("2006-01-02 15:04:05.000") + "]")
-		format := messageFormat + "\x1b[0m"
-		switch level {
-		case Fatal:
-			//logger.SetOutput(os.Stderr)
-			logger.Logger.Fatalf(format, args...)
-		case Panic:
-			//logger.SetOutput(os.Stderr)
-			logger.Logger.Panicf(format, args...)
-		default:
-			//logger.SetOutput(os.Stdout)
-			logger.Logger.Printf(format, args...)
-			break
-		}
-	}
-}
-
-func (logger *LeveledLoggerImpl) Trace(message string) {
-	logger.Println(Trace, message)
-}
-func (logger *LeveledLoggerImpl) Tracef(messageFormat string, args ...any) {
-	logger.Printf(Trace, messageFormat, args...)
-}
-
-func (logger *LeveledLoggerImpl) Debug(message string) {
-	logger.Println(Debug, message)
-}
-func (logger *LeveledLoggerImpl) Debugf(messageFormat string, args ...any) {
-	logger.Printf(Debug, messageFormat, args...)
-}
-
-func (logger *LeveledLoggerImpl) Info(message string) {
-	logger.Println(Info, message)
-}
-
-func (logger *LeveledLoggerImpl) Infof(messageFormat string, args ...any) {
-	logger.Printf(Info, messageFormat, args...)
-}
-
-func (logger *LeveledLoggerImpl) Warn(message string) {
-	logger.Println(Warn, message)
-}
-
-func (logger *LeveledLoggerImpl) Warnf(messageFormat string, args ...any) {
-	logger.Printf(Warn, messageFormat, args...)
-}
-func (logger *LeveledLoggerImpl) Error(message string) {
-	logger.Println(Error, message)
-	log.Println(StackTrace(false))
-}
-
-func (logger *LeveledLoggerImpl) Errorf(messageFormat string, args ...any) {
-	logger.Printf(Error, messageFormat, args...)
-}
-
-func (logger *LeveledLoggerImpl) Fatal(message string) {
-	logger.Println(Fatal, message)
-	log.Println(StackTrace(false))
-}
-
-func (logger *LeveledLoggerImpl) Fatalf(messageFormat string, args ...any) {
-	logger.Printf(Fatal, messageFormat, args...)
-}
-
-func (logger *LeveledLoggerImpl) Panic(message string) {
-	logger.Println(Panic, message)
-	log.Println(StackTrace(false))
-}
-
-func (logger *LeveledLoggerImpl) Panicf(messageFormat string, args ...any) {
-	logger.Printf(Panic, messageFormat, args...)
+func Severef(messageFormat string, args ...any) {
+	logx.Severef(SetColorLogLevel(logx.SevereLevel, messageFormat), args...)
 }
