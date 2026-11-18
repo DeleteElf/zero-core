@@ -1,6 +1,7 @@
 package loghelper
 
 import (
+	"fmt"
 	"runtime"
 	"syscall"
 	"unsafe"
@@ -27,6 +28,11 @@ func GetColorLevel(level uint32) string {
 	return levelMap[level]
 }
 
+func InitLog(level uint32) {
+	//logx.SetWriter() //todo:如果想输出正确的caller，需要修改writer
+	logx.WithCallerSkip(1) //todo:通过获取一个不输出的caller，然后，我们自己再增加字段！
+}
+
 //	func Printf(level uint32, messageFormat string, args ...any) {
 //		if logger.Level >= level {
 //			logger.SetPrefix(GetColorLevel(level) + logManager.levels[level] + "[" + logger.scope + "][" + time.Now().Format("2006-01-02 15:04:05.000") + "]")
@@ -44,6 +50,20 @@ func GetColorLevel(level uint32) string {
 //			}
 //		}
 //	}
+
+// ★ 调用层级:
+//
+//	skip = 0: getRealCaller 自身
+//	skip = 1: 调用 getRealCaller 的函数（如 Info）
+//	skip = 2: 调用 Info 的业务代码 ← 这是我们要的
+func getRealCaller(skip int) string {
+	_, file, line, ok := runtime.Caller(skip)
+	if !ok {
+		return "unknown"
+	}
+	return fmt.Sprintf("%s:%d", file, line)
+}
+
 func enableWindowsANSI() {
 	kernel32 := syscall.NewLazyDLL("kernel32.dll")
 	setConsoleMode := kernel32.NewProc("SetConsoleMode")
@@ -70,11 +90,12 @@ func Debugf(messageFormat string, args ...any) {
 }
 
 func Info(message string) {
+	//logx.Infow(SetColorLogLevel(logx.InfoLevel, message), logx.Field("caller", getRealCaller(4)))
 	logx.Info(SetColorLogLevel(logx.InfoLevel, message))
 }
 
 func Infof(messageFormat string, args ...any) {
-	logx.Infof(SetColorLogLevel(logx.InfoLevel, messageFormat), args...)
+	logx.Info(fmt.Sprintf(messageFormat, args...))
 }
 
 func Error(message string) {
