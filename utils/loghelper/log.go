@@ -13,8 +13,8 @@ func GetColorLevel(level uint32) string {
 	levelMap := map[uint32]string{
 		logx.DebugLevel:  "\x1b[97;32m", //绿色
 		logx.InfoLevel:   "\x1b[97;0m",  // 白色
-		logx.ErrorLevel:  "\x1b[97;33m", // 黄色
-		logx.SevereLevel: "\x1b[97;31m", // 红色
+		logx.ErrorLevel:  "\x1b[97;31m", // 红色
+		logx.SevereLevel: "\x1b[97;33m", // 黄色
 	}
 	//背景色。。。。
 	//levelMap := map[string]string{
@@ -28,34 +28,16 @@ func GetColorLevel(level uint32) string {
 	return levelMap[level]
 }
 
-func InitLog(level uint32) {
-	//logx.SetWriter() //todo:如果想输出正确的caller，需要修改writer
-	logx.WithCallerSkip(1) //todo:通过获取一个不输出的caller，然后，我们自己再增加字段！
+var logger logx.Logger
+
+func InitLog() {
+	logger = logx.WithCallerSkip(1) //我们包装了一层，让它跳过一层即可
 }
 
-//	func Printf(level uint32, messageFormat string, args ...any) {
-//		if logger.Level >= level {
-//			logger.SetPrefix(GetColorLevel(level) + logManager.levels[level] + "[" + logger.scope + "][" + time.Now().Format("2006-01-02 15:04:05.000") + "]")
-//			format := messageFormat + "\x1b[0m"
-//			switch level {
-//			case logx.DebugLevel:
-//				logx.Debug(msg)
-//			case logx.InfoLevel:
-//				logx.Info(msg)
-//			case logx.ErrorLevel:
-//				logx.Error(msg)
-//			case logx.SevereLevel:
-//				logx.Servere(msg)
-//			default:
-//			}
-//		}
-//	}
-
-// ★ 调用层级:
-//
-//	skip = 0: getRealCaller 自身
-//	skip = 1: 调用 getRealCaller 的函数（如 Info）
-//	skip = 2: 调用 Info 的业务代码 ← 这是我们要的
+//	 ★ 调用层级（这个代码在这里保留，仅作为技术存储）:
+//		skip = 0: getRealCaller 自身
+//		skip = 1: 调用 getRealCaller 的函数（如 Info）
+//		skip = 2: 调用 Info 的业务代码 ← 这是我们要的
 func getRealCaller(skip int) string {
 	_, file, line, ok := runtime.Caller(skip)
 	if !ok {
@@ -83,32 +65,40 @@ func SetColorLogLevel(level uint32, msg string) string {
 }
 
 func Debug(message string) {
-	logx.Debug(SetColorLogLevel(logx.DebugLevel, message))
+	logger.Debug(SetColorLogLevel(logx.DebugLevel, message))
 }
 func Debugf(messageFormat string, args ...any) {
-	logx.Debugf(SetColorLogLevel(logx.DebugLevel, messageFormat), args...)
+	logger.Debugf(SetColorLogLevel(logx.DebugLevel, messageFormat), args...)
 }
 
 func Info(message string) {
 	//logx.Infow(SetColorLogLevel(logx.InfoLevel, message), logx.Field("caller", getRealCaller(4)))
-	logx.Info(SetColorLogLevel(logx.InfoLevel, message))
+	logger.Info(SetColorLogLevel(logx.InfoLevel, message))
 }
 
 func Infof(messageFormat string, args ...any) {
-	logx.Info(fmt.Sprintf(messageFormat, args...))
+	//Info(fmt.Sprintf(messageFormat, args...)) //我们现在不用重度优化，为了保证caller级别的正确性，这里也只做一级调用
+	logger.Infof(SetColorLogLevel(logx.InfoLevel, messageFormat), args...)
 }
 
 func Error(message string) {
-	logx.Error(SetColorLogLevel(logx.ErrorLevel, message))
+	logger.Error(SetColorLogLevel(logx.ErrorLevel, message))
 }
 
 func Errorf(messageFormat string, args ...any) {
-	logx.Errorf(SetColorLogLevel(logx.ErrorLevel, messageFormat), args...)
+	logger.Errorf(SetColorLogLevel(logx.ErrorLevel, messageFormat), args...)
 }
 
-func Severe(message string) {
-	logx.Severe(SetColorLogLevel(logx.SevereLevel, message))
+func Slow(message string) {
+	logger.Slow(SetColorLogLevel(logx.InfoLevel, message))
 }
-func Severef(messageFormat string, args ...any) {
-	logx.Severef(SetColorLogLevel(logx.SevereLevel, messageFormat), args...)
+func Slowf(messageFormat string, args ...any) {
+	logger.Slowf(SetColorLogLevel(logx.InfoLevel, messageFormat), args...)
 }
+
+//func Severe(message string) {
+//	logger.Severe(SetColorLogLevel(logx.SevereLevel, message))
+//}
+//func Severef(messageFormat string, args ...any) {
+//	logger.Severef(SetColorLogLevel(logx.SevereLevel, messageFormat), args...)
+//}
