@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/deleteelf/goframework/utils/stringhelper"
+	"github.com/deleteelf/zero-core/utils/stringhelper"
 )
 
 type IdData interface {

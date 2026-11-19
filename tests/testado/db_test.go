@@ -3,18 +3,19 @@ package testado
 import (
 	"encoding/json"
 	"errors"
-	"github.com/deleteelf/goframework/ado"
-	"github.com/deleteelf/goframework/utils/loghelper"
-	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 	"testing"
 	"time"
+
+	"github.com/deleteelf/zero-core/ado"
+	"github.com/deleteelf/zero-core/utils/loghelper"
+	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 func TestSelect(t *testing.T) {
 	ctr := "host=localhost user=postgres dbname=test password=test123 port=5432 sslmode=disable"
-	loghelper.GetLogManager().Init(loghelper.Debug)
-	dbCon := ado.CreateDb(ctr, ado.Postgres, logger.Info)
+	loghelper.InitLog()
+	dbCon, _ := ado.CreateDb(ctr, ado.Postgres, logger.LogLevel(4))
 	dataTable := dbCon.QueryData(`SELECT * FROM t_user_info where f_id = ?`, 1)
 	jsonData, err := json.Marshal(dataTable.Rows)
 	if err != nil {
@@ -25,9 +26,9 @@ func TestSelect(t *testing.T) {
 
 func TestTransaction(t *testing.T) {
 	ctr := "host=localhost user=postgres dbname=test password=test123 port=5432 sslmode=disable"
-	loghelper.GetLogManager().Init(loghelper.Debug)
+	loghelper.InitLog()
 
-	dbCon := ado.CreateDb(ctr, ado.Postgres, logger.Info)
+	dbCon, _ := ado.CreateDb(ctr, ado.Postgres, logger.LogLevel(4))
 	dataTable := dbCon.QueryData(`SELECT * FROM t_user_info where f_id = ?`, 1)
 	jsonData, err := json.Marshal(dataTable.Rows)
 	if err != nil {
@@ -69,9 +70,8 @@ func TestTransaction(t *testing.T) {
 
 func TestTransactionCallback(t *testing.T) {
 	ctr := "host=localhost user=postgres dbname=test password=test123 port=5432 sslmode=disable"
-	loghelper.GetLogManager().Init(loghelper.Debug)
-
-	dbCon := ado.CreateDb(ctr, ado.Postgres, logger.Info)
+	loghelper.InitLog()
+	dbCon, _ := ado.CreateDb(ctr, ado.Postgres, logger.LogLevel(4))
 	dataTable := dbCon.QueryData(`SELECT * FROM t_user_info where f_id = ?`, 1)
 	jsonData, err := json.Marshal(dataTable.Rows)
 	if err != nil {
