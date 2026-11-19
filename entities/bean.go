@@ -1,9 +1,10 @@
 package entities
 
 import (
-	"github.com/deleteelf/goframework/utils/stringhelper"
 	"reflect"
 	"time"
+
+	"github.com/deleteelf/goframework/utils/stringhelper"
 )
 
 type IdData interface {
@@ -30,7 +31,8 @@ type Bean[T IdData] struct {
 	Remark     *string   `gorm:"column:f_remark" json:"remark" xml:"remark,cdata"` //定义指针是为了支持空值
 }
 
-type Entity struct {
+type Entity[T IdData] struct {
+	Bean[T]
 	Name string `gorm:"column:f_name;type:varchar(20);" json:"name" xml:"name,attr"` //定义有名称的实体
 }
 
@@ -41,12 +43,11 @@ type Parent[T IdData] struct {
 
 // UserInfo 系统用户
 type UserInfo struct {
-	Bean[int]         //匿名扩展
-	Entity            //扁平式扩展，而非继承
-	Account   string  `gorm:"column:f_account;type:varchar(20);not null" json:"account"`
-	Password  string  `gorm:"column:f_password;type:varchar(35);not null" json:"-"`  //密码不允许对外输出
-	Email     *string `gorm:"column:f_email;type:varchar(30);" json:"email"`         //定义指针是为了支持空值
-	Telephone *string `gorm:"column:f_telephone;type:varchar(20);" json:"telephone"` //定义有名称的实体
+	Entity[int]         //扁平式扩展，而非继承
+	Account     string  `gorm:"column:f_account;type:varchar(20);not null" json:"account"`
+	Password    string  `gorm:"column:f_password;type:varchar(35);not null" json:"-"`  //密码不允许对外输出
+	Email       *string `gorm:"column:f_email;type:varchar(30);" json:"email"`         //定义指针是为了支持空值
+	Telephone   *string `gorm:"column:f_telephone;type:varchar(20);" json:"telephone"` //定义有名称的实体
 }
 
 // TableName 系统用户的表名定义

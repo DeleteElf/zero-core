@@ -40,7 +40,7 @@ func (pg *PostgresDB) Open() bool {
 		loghelper.Errorf("数据库连接失败！！%s", pg.Config.ConnectionString)
 		return false
 	}
-	loghelper.Infof("数据库连接成功！！%s", pg.Config.ConnectionString)
+	loghelper.Debugf("数据库连接成功！！%s", pg.Config.ConnectionString)
 	return true
 }
 

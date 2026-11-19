@@ -1,14 +1,14 @@
 package entities
 
 // IObject 对象基类
-type IObject interface{}
+type IObject struct{}
 
 // IModel 数据模型基类
 type IModel struct {
 	IObject
 }
 
-type IConfig interface {
+type IConfig struct {
 	IObject
 }
 
