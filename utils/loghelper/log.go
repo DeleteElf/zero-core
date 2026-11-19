@@ -16,15 +16,16 @@ func GetColorLevel(level uint32) string {
 		logx.ErrorLevel:  "\x1b[97;31m", // 红色
 		logx.SevereLevel: "\x1b[97;33m", // 黄色
 	}
-	//背景色。。。。
-	//levelMap := map[string]string{
-	//	"Fatal": "\x1b[97;41m", // 红色
-	//	"Panic": "\x1b[97;41m", // 红色
-	//	"Error": "\x1b[97;41m", // 红色
-	//	"Warn":  "\x1b[97;43m", // 黄色
-	//	"Info":  "\x1b[97;0m",  // 白色
-	//	"Debug": "\x1b[97;42m", //绿色
-	//}
+	//颜色      前景色    背景色
+	//──────────────────────────
+	//黑色       30        40
+	//红色       31        41
+	//绿色       32        42
+	//黄色       33        43
+	//蓝色       34        44
+	//品红       35        45
+	//青色       36        46
+	//白色       37        47
 	return levelMap[level]
 }
 
