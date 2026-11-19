@@ -4,7 +4,7 @@ import (
 	"database/sql"
 	"fmt"
 
-	"github.com/deleteelf/zero-core/entities"
+	"github.com/DeleteElf/zero-core/entities"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )

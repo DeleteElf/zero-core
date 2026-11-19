@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"time"
 
-	"github.com/deleteelf/zero-core/utils/stringhelper"
+	"github.com/DeleteElf/zero-core/utils/stringhelper"
 )
 
 type IdData interface {

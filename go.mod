@@ -1,4 +1,4 @@
-module github.com/deleteelf/zero-core
+module github.com/DeleteElf/zero-core
 
 go 1.26.10
 

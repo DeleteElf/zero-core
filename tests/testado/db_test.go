@@ -6,8 +6,8 @@ import (
 	"testing"
 	"time"
 
-	"github.com/deleteelf/zero-core/ado"
-	"github.com/deleteelf/zero-core/utils/loghelper"
+	"github.com/DeleteElf/zero-core/ado"
+	"github.com/DeleteElf/zero-core/utils/loghelper"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )

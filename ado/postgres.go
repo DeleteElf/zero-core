@@ -7,9 +7,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deleteelf/zero-core/entities"
-	"github.com/deleteelf/zero-core/utils/loghelper"
-	"github.com/deleteelf/zero-core/utils/stringhelper"
+	"github.com/DeleteElf/zero-core/entities"
+	"github.com/DeleteElf/zero-core/utils/loghelper"
+	"github.com/DeleteElf/zero-core/utils/stringhelper"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"

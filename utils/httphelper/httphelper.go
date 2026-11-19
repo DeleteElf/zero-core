@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/deleteelf/zero-core/web"
+	"github.com/DeleteElf/zero-core/web"
 	"github.com/go-playground/validator/v10"
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/zeromicro/go-zero/rest/httpx"
