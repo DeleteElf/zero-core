@@ -32,6 +32,7 @@ var logger logx.Logger
 
 func InitLog() {
 	logger = logx.WithCallerSkip(1) //我们包装了一层，让它跳过一层即可
+	Info("日志系统启动！！！")
 }
 
 //	 ★ 调用层级（这个代码在这里保留，仅作为技术存储）:
