@@ -33,6 +33,10 @@ var logger logx.Logger
 
 func InitLog() {
 	logger = logx.WithCallerSkip(1) //我们包装了一层，让它跳过一层即可
+	if runtime.GOOS == "windows" {
+		// Windows 10+ 可通过启用 VT 支持 ANSI
+		enableWindowsANSI()
+	}
 	Info("日志系统启动！！！")
 }
 
@@ -59,10 +63,6 @@ func enableWindowsANSI() {
 	setConsoleMode.Call(uintptr(handle), uintptr(mode|0x0004))
 }
 func SetColorLogLevel(level uint32, msg string) string {
-	if runtime.GOOS == "windows" {
-		// Windows 10+ 可通过启用 VT 支持 ANSI
-		enableWindowsANSI()
-	}
 	return GetColorLevel(level) + msg + "\x1b[0m"
 }
 
