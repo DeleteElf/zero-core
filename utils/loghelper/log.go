@@ -40,6 +40,10 @@ func InitLog() {
 	Info("日志系统启动！！！")
 }
 
+func GetLogger(module string) logx.Logger {
+	return logger.WithFields(logx.Field("module", module))
+}
+
 //	 ★ 调用层级（这个代码在这里保留，仅作为技术存储）:
 //		skip = 0: getRealCaller 自身
 //		skip = 1: 调用 getRealCaller 的函数（如 Info）
@@ -92,10 +96,10 @@ func Errorf(messageFormat string, args ...any) {
 }
 
 func Slow(message string) {
-	logger.Slow(SetColorLogLevel(logx.InfoLevel, message))
+	logger.Slow(SetColorLogLevel(logx.SevereLevel, message))
 }
 func Slowf(messageFormat string, args ...any) {
-	logger.Slowf(SetColorLogLevel(logx.InfoLevel, messageFormat), args...)
+	logger.Slowf(SetColorLogLevel(logx.SevereLevel, messageFormat), args...)
 }
 
 //func Severe(message string) {
@@ -104,3 +108,19 @@ func Slowf(messageFormat string, args ...any) {
 //func Severef(messageFormat string, args ...any) {
 //	logger.Severef(SetColorLogLevel(logx.SevereLevel, messageFormat), args...)
 //}
+
+// Trace 跟踪级别的日志
+func Trace(message string) {
+	logger.Debug(SetColorLogLevel(logx.DebugLevel, message))
+}
+func Tracef(messageFormat string, args ...any) {
+	logger.Debugf(SetColorLogLevel(logx.DebugLevel, messageFormat), args...)
+}
+
+// Warn 警告级别的日志
+func Warn(message string) {
+	logger.Error(SetColorLogLevel(logx.SevereLevel, message))
+}
+func Warnf(messageFormat string, args ...any) {
+	logger.Errorf(SetColorLogLevel(logx.SevereLevel, messageFormat), args...)
+}

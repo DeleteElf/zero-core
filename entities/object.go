@@ -8,13 +8,14 @@ type IModel struct {
 	IObject
 }
 
-type IConfig struct {
-	IObject
+type IConfig interface {
+	GetConfig()
 }
 
 // BaseConfig 配置对象基类
 type BaseConfig struct {
-	IConfig `json:"-"`
+	IObject `json:"-"`
 	Name    string `json:",omitempty"`
 	Enable  bool   `json:",default=true"`
+	IConfig
 }
