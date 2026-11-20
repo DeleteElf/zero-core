@@ -17,5 +17,5 @@ type BaseConfig struct {
 	IObject `json:"-"`
 	Name    string `json:",omitempty"`
 	Enable  bool   `json:",default=true"`
-	IConfig
+	IConfig `json:"-"`
 }
